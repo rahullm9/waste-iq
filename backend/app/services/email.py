@@ -8,7 +8,7 @@ def send_password_reset_email(email: str, token: str) -> None:
     """
     Sends a password reset email using SMTP.
     """
-    reset_link = f"http://localhost:5173/reset-password?token={token}"
+    reset_link = f"{settings.frontend_url}/reset-password?token={token}"
 
     host = settings.smtp_host
     user = settings.smtp_user
@@ -16,7 +16,7 @@ def send_password_reset_email(email: str, token: str) -> None:
     from_email = settings.emails_from_email
 
     if not host or not user or not password or not from_email:
-        print(f"\n[EMAIL MOCK - MISSING CONFIG] Password Reset Link for {email}:\n{reset_link}\n")
+        print(f"\n[EMAIL MOCK - MISSING CONFIG] Password Reset requested for {email}. SMTP is not configured, so no email was actually sent.\n")
         return
 
     msg = EmailMessage()

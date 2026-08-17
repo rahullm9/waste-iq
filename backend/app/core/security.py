@@ -20,7 +20,7 @@ def create_access_token(subject: str, token_version: int = 1) -> str:
     expires_at = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
     )
-    payload = {"sub": subject, "exp": expires_at, "ver": token_version}
+    payload = {"sub": subject, "exp": expires_at, "ver": token_version, "purpose": "access"}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
@@ -31,8 +31,9 @@ def decode_access_token(token: str) -> dict:
         raise ValueError("Invalid or expired token") from exc
 
     subject = payload.get("sub")
-    if not subject:
-        raise ValueError("Malformed token")
+    purpose = payload.get("purpose")
+    if not subject or purpose != "access":
+        raise ValueError("Malformed token or invalid purpose")
     return payload
 
 

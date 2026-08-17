@@ -1,6 +1,7 @@
+import time
 from collections.abc import Generator
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -99,10 +100,26 @@ def get_pickup_request_creation_service(
     return PickupRequestCreationService(image_service=image_service)
 
 
+_rate_limit_store = {}
+
 def rate_limit(requests: int, window: int):
-    """Stub for rate limiting dependency (WIQ-V1-017)"""
-
-    def dependency():
-        pass
-
+    """Basic in-memory rate limiting dependency"""
+    def dependency(request: Request):
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        key = f"{client_ip}:{request.url.path}"
+        now = time.time()
+        
+        if key not in _rate_limit_store:
+            _rate_limit_store[key] = []
+            
+        # Clean up old entries
+        _rate_limit_store[key] = [t for t in _rate_limit_store[key] if now - t < window]
+        
+        if len(_rate_limit_store[key]) >= requests:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests, please try again later."
+            )
+            
+        _rate_limit_store[key].append(now)
     return dependency

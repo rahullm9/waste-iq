@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         default="http://localhost:5173,https://waste-iq-zeta.vercel.app",
         alias="CORS_ORIGINS",
     )
+    frontend_url: str = Field(
+        default="http://localhost:5173",
+        alias="FRONTEND_URL",
+    )
 
     admin_registration_code: str | None = Field(default=None, alias="ADMIN_REGISTRATION_CODE")
     bootstrap_admin_name: str | None = Field(default=None, alias="BOOTSTRAP_ADMIN_NAME")
